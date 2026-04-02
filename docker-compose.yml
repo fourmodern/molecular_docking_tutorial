@@ -1,0 +1,8 @@
+services:
+  docking:
+    build: .
+    ports:
+      - "8888:8888"
+    volumes:
+      - ./results:/workspace/results
+    container_name: mol-docking
