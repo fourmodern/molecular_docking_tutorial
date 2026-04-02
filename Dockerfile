@@ -48,6 +48,10 @@ RUN pip install --no-cache-dir \
 # Working directory
 WORKDIR /workspace
 COPY *.ipynb /workspace/
+COPY run_docking.py run_all.sh /workspace/
+COPY pymol_scripts/ /workspace/pymol_scripts/
+
+VOLUME /workspace/results
 
 EXPOSE 8888
 

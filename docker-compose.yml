@@ -4,5 +4,5 @@ services:
     ports:
       - "8888:8888"
     volumes:
-      - ./results:/workspace/results
+      - ./results:/workspace/docking_output/results
     container_name: mol-docking
