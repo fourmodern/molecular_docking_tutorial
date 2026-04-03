@@ -7,10 +7,11 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV BIN_DIR=/opt/bin
 ENV PATH="${BIN_DIR}:${PATH}"
 
-# System dependencies
+# System dependencies (libboost-all-dev needed for vina pip build)
 RUN apt-get update && apt-get install -y --no-install-recommends \
     wget curl git build-essential \
     libxml2 libxslt1.1 \
+    libboost-all-dev swig \
     && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir -p ${BIN_DIR}
@@ -32,13 +33,12 @@ RUN cd /tmp \
     && rm -rf /tmp/ADFRsuite* \
     || echo "WARNING: ADFRsuite install failed — PDBQT conversion will use Open Babel fallback"
 
-# Python packages
+# Python packages (pymol excluded — use Windows PyMOL for visualization)
 RUN pip install --no-cache-dir \
     rdkit-pypi \
     meeko vina \
     openbabel-wheel \
     pdbfixer openmm \
-    pymol-open-source \
     py3Dmol \
     MDAnalysis \
     prolif \
