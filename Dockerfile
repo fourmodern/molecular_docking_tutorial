@@ -36,7 +36,7 @@ RUN cd /tmp \
 
 # Python packages
 RUN pip install --no-cache-dir \
-    rdkit-pypi \
+    rdkit \
     meeko vina \
     openbabel-wheel \
     pdbfixer openmm \
