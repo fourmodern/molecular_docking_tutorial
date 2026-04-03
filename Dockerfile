@@ -1,28 +1,24 @@
-FROM python:3.10-slim
+FROM condaforge/mambaforge:latest
 
-LABEL maintainer="Molecular Docking Workshop"
-LABEL description="Molecular docking environment with Vina, smina, ADFRsuite"
+LABEL description="Molecular Docking Workshop (conda-based)"
 
 ENV DEBIAN_FRONTEND=noninteractive
 ENV BIN_DIR=/opt/bin
 ENV PATH="${BIN_DIR}:${PATH}"
 
-# System dependencies
+# System tools
 RUN apt-get update && apt-get install -y --no-install-recommends \
-    wget curl git build-essential \
-    libxml2 libxslt1.1 \
-    libboost-all-dev swig \
-    libxrender1 libxext6 libgl1 \
+    wget curl git \
     && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir -p ${BIN_DIR}
 
-# smina (follow redirects with -L)
+# smina binary
 RUN wget -q -L -O ${BIN_DIR}/smina \
     "https://sourceforge.net/projects/smina/files/smina.static/download" \
     && chmod +x ${BIN_DIR}/smina
 
-# ADFRsuite (skip if download fails — Scripps server can be flaky)
+# ADFRsuite (skip if fails)
 RUN cd /tmp \
     && wget -q --timeout=120 -O ADFRsuite.tar.gz \
        "https://ccsb.scripps.edu/adfr/download/1038/" \
@@ -32,25 +28,27 @@ RUN cd /tmp \
     && ln -sf ${BIN_DIR}/ADFRsuite/bin/prepare_receptor ${BIN_DIR}/prepare_receptor \
     && ln -sf ${BIN_DIR}/ADFRsuite/bin/prepare_ligand ${BIN_DIR}/prepare_ligand \
     && rm -rf /tmp/ADFRsuite* \
-    || echo "WARNING: ADFRsuite install failed — PDBQT conversion will use Open Babel fallback"
+    || echo "WARNING: ADFRsuite install failed"
 
-# Python packages
-RUN pip install --no-cache-dir \
+# Conda packages (pymol-open-source works reliably via conda-forge)
+RUN mamba install -y -c conda-forge \
+    python=3.10 \
     rdkit \
-    meeko vina \
-    openbabel-wheel \
-    pdbfixer openmm \
-    py3Dmol \
-    MDAnalysis \
+    pymol-open-source \
+    openbabel \
+    pdbfixer \
+    openmm \
+    mdanalysis \
     prolif \
-    seaborn scipy scikit-learn \
-    jupyter notebook
+    meeko \
+    scipy scikit-learn \
+    seaborn matplotlib pandas numpy \
+    py3dmol \
+    vina \
+    gemmi \
+    jupyter notebook \
+    && mamba clean -afy
 
-# pymol-open-source (separate layer — may fail on ARM, works on x86_64)
-RUN pip install --no-cache-dir pymol-open-source || \
-    echo "WARNING: pymol-open-source not available on this platform — use Windows PyMOL"
-
-# Working directory
 WORKDIR /workspace
 COPY *.ipynb /workspace/
 COPY run_docking.py run_all.sh mol_utils.py /workspace/
