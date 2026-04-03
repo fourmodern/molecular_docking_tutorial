@@ -98,7 +98,6 @@ def install_adfrsuite():
 
 def check_imports():
     try:
-        from pymol import cmd
         from vina import Vina
         from openbabel import pybel
         from rdkit import Chem
@@ -108,10 +107,14 @@ def check_imports():
         import MDAnalysis as mda
         import prolif as plf
         import pandas as pd
+        # pymol is optional — use mol_utils fallback if not available
+        try:
+            from pymol import cmd
+        except ImportError:
+            print("  pymol not available — using mol_utils fallback")
         return True
     except ImportError as e:
         print(f"Missing package: {e}")
-        print("Run: pip install rdkit-pypi meeko vina openbabel-wheel pdbfixer openmm pymol-open-source MDAnalysis prolif seaborn")
         return False
 
 
@@ -121,28 +124,24 @@ def check_imports():
 
 def pdb_clean(pdb_code, chain="A", work_dir="."):
     """Fetch PDB, extract chain, separate protein and ligand."""
-    from pymol import cmd
-
-    clean_pdb = os.path.join(work_dir, f"{pdb_code}_clean.pdb")
-    lig_mol2 = os.path.join(work_dir, f"{pdb_code}_lig.mol2")
-
-    cmd.delete("all")
-    cmd.fetch(code=pdb_code, type="pdb", path=work_dir)
-    cmd.remove(f"not chain {chain}")
-    cmd.select(name="Prot", selection="polymer.protein")
-    cmd.select(name="Lig", selection="organic")
-
-    n_lig = cmd.count_atoms("Lig")
-    if n_lig < 5:
-        print(f"  Warning: only {n_lig} ligand atoms in chain {chain}")
-
-    cmd.save(filename=clean_pdb, format="pdb", selection="Prot")
-    cmd.save(filename=lig_mol2, format="mol2", selection="Lig")
-    cmd.delete("all")
-
-    print(f"  Protein: {clean_pdb}")
-    print(f"  Ligand:  {lig_mol2}")
-    return clean_pdb, lig_mol2
+    try:
+        from pymol import cmd
+        clean_pdb = os.path.join(work_dir, f"{pdb_code}_clean.pdb")
+        lig_mol2 = os.path.join(work_dir, f"{pdb_code}_lig.mol2")
+        cmd.delete("all")
+        cmd.fetch(code=pdb_code, type="pdb", path=work_dir)
+        cmd.remove(f"not chain {chain}")
+        cmd.select(name="Prot", selection="polymer.protein")
+        cmd.select(name="Lig", selection="organic")
+        cmd.save(filename=clean_pdb, format="pdb", selection="Prot")
+        cmd.save(filename=lig_mol2, format="mol2", selection="Lig")
+        cmd.delete("all")
+        print(f"  Protein: {clean_pdb}")
+        print(f"  Ligand:  {lig_mol2}")
+        return clean_pdb, lig_mol2
+    except ImportError:
+        from mol_utils import pdb_clean as _pdb_clean
+        return _pdb_clean(pdb_code, chain=chain, work_dir=work_dir)
 
 
 def fix_protein(filename, output, addHs_pH=7.4):
@@ -179,29 +178,23 @@ def prep_ligand(lig_mol2):
 
 
 def get_docking_box(prot_H, lig_H, extending=7.0):
-    """Calculate docking box from ligand position using PyMOL."""
-    from pymol import cmd
-
-    cmd.delete("all")
-    cmd.load(filename=prot_H, format="pdb", object="prot")
-    cmd.load(filename=lig_H, format="mol2", object="lig")
-
-    ([minX, minY, minZ], [maxX, maxY, maxZ]) = cmd.get_extent("lig")
-    pad = float(extending)
-    center = {
-        "center_x": (maxX + minX) / 2,
-        "center_y": (maxY + minY) / 2,
-        "center_z": (maxZ + minZ) / 2,
-    }
-    size = {
-        "size_x": maxX - minX + 2 * pad,
-        "size_y": maxY - minY + 2 * pad,
-        "size_z": maxZ - minZ + 2 * pad,
-    }
-    cmd.delete("all")
-    print(f"  Box center: ({center['center_x']:.1f}, {center['center_y']:.1f}, {center['center_z']:.1f})")
-    print(f"  Box size:   ({size['size_x']:.1f}, {size['size_y']:.1f}, {size['size_z']:.1f})")
-    return center, size
+    """Calculate docking box from ligand position."""
+    try:
+        from pymol import cmd
+        cmd.delete("all")
+        cmd.load(filename=prot_H, format="pdb", object="prot")
+        cmd.load(filename=lig_H, format="mol2", object="lig")
+        ([minX, minY, minZ], [maxX, maxY, maxZ]) = cmd.get_extent("lig")
+        pad = float(extending)
+        center = {"center_x": (maxX+minX)/2, "center_y": (maxY+minY)/2, "center_z": (maxZ+minZ)/2}
+        size = {"size_x": maxX-minX+2*pad, "size_y": maxY-minY+2*pad, "size_z": maxZ-minZ+2*pad}
+        cmd.delete("all")
+        print(f"  Box center: ({center['center_x']:.1f}, {center['center_y']:.1f}, {center['center_z']:.1f})")
+        print(f"  Box size:   ({size['size_x']:.1f}, {size['size_y']:.1f}, {size['size_z']:.1f})")
+        return center, size
+    except ImportError:
+        from mol_utils import get_docking_box as _get_box
+        return _get_box(lig_H, extending=extending)
 
 
 def make_pdbqt(prot_H, lig_H):

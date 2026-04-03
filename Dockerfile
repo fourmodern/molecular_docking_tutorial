@@ -7,11 +7,12 @@ ENV DEBIAN_FRONTEND=noninteractive
 ENV BIN_DIR=/opt/bin
 ENV PATH="${BIN_DIR}:${PATH}"
 
-# System dependencies (libboost-all-dev needed for vina pip build)
+# System dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     wget curl git build-essential \
     libxml2 libxslt1.1 \
     libboost-all-dev swig \
+    libxrender1 libxext6 libgl1 \
     && rm -rf /var/lib/apt/lists/*
 
 RUN mkdir -p ${BIN_DIR}
@@ -33,7 +34,7 @@ RUN cd /tmp \
     && rm -rf /tmp/ADFRsuite* \
     || echo "WARNING: ADFRsuite install failed — PDBQT conversion will use Open Babel fallback"
 
-# Python packages (pymol excluded — use Windows PyMOL for visualization)
+# Python packages
 RUN pip install --no-cache-dir \
     rdkit-pypi \
     meeko vina \
@@ -45,10 +46,14 @@ RUN pip install --no-cache-dir \
     seaborn scipy scikit-learn \
     jupyter notebook
 
+# pymol-open-source (separate layer — may fail on ARM, works on x86_64)
+RUN pip install --no-cache-dir pymol-open-source || \
+    echo "WARNING: pymol-open-source not available on this platform — use Windows PyMOL"
+
 # Working directory
 WORKDIR /workspace
 COPY *.ipynb /workspace/
-COPY run_docking.py run_all.sh /workspace/
+COPY run_docking.py run_all.sh mol_utils.py /workspace/
 COPY pymol_scripts/ /workspace/pymol_scripts/
 
 VOLUME /workspace/results
