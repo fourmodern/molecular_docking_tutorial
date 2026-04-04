@@ -52,6 +52,7 @@ RUN mamba install -y -c conda-forge \
 WORKDIR /workspace
 COPY *.ipynb /workspace/
 COPY run_docking.py run_all.sh mol_utils.py /workspace/
+COPY practical_docking/ /workspace/practical_docking/
 COPY pymol_scripts/ /workspace/pymol_scripts/
 
 VOLUME /workspace/results
