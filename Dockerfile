@@ -47,7 +47,7 @@ RUN mamba install -y -c conda-forge \
     vina \
     gemmi \
     chembl_webresource_client \
-    jupyter notebook \
+    jupyterlab \
     && mamba clean -afy
 
 WORKDIR /workspace
@@ -60,4 +60,4 @@ VOLUME /workspace/results
 
 EXPOSE 8888
 
-CMD ["jupyter", "notebook", "--ip=0.0.0.0", "--port=8888", "--no-browser", "--allow-root", "--NotebookApp.token=docking"]
+CMD ["jupyter", "lab", "--ip=0.0.0.0", "--port=8888", "--no-browser", "--allow-root", "--ServerApp.token=docking"]
