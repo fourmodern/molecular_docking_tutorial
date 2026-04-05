@@ -15,6 +15,7 @@ Colab-ready Jupyter notebooks for computational drug discovery — from single-t
 | **03. SAR Matrix** | R1×R2 조합 → 도킹 → SAR 히트맵 | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/fourmodern/molecular_docking_tutorial/blob/main/practical_docking/03_SAR_Matrix.ipynb) |
 | **04. Kinase Panel** | 5종 키나아제 × 리간드 → 선택성 분석 | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/fourmodern/molecular_docking_tutorial/blob/main/practical_docking/04_Kinase_Panel.ipynb) |
 | **05. EGFR 변이체** | WT/변이체 × 4세대 약물 → 내성 분석 | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/fourmodern/molecular_docking_tutorial/blob/main/practical_docking/05_EGFR_Mutants.ipynb) |
+| **06. Scoring 검증** | ChEMBL IC50 vs 도킹 스코어 → 최적 모델 | [![Open In Colab](https://colab.research.google.com/assets/colab-badge.svg)](https://colab.research.google.com/github/fourmodern/molecular_docking_tutorial/blob/main/practical_docking/06_Scoring_Validation.ipynb) |
 
 ### 권장 순서
 
