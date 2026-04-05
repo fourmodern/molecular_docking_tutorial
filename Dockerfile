@@ -46,6 +46,7 @@ RUN mamba install -y -c conda-forge \
     py3dmol \
     vina \
     gemmi \
+    chembl_webresource_client \
     jupyter notebook \
     && mamba clean -afy
 
