@@ -6,3 +6,8 @@ services:
     volumes:
       - ./results:/workspace/docking_output/results
     container_name: mol-docking
+    deploy:
+      resources:
+        limits:
+          cpus: '0'
+    shm_size: '2gb'
